@@ -34,7 +34,10 @@ export default function DailyQuote() {
   }, []);
 
   return (
-    <Typography variant="caption" sx={{ display: "block", opacity: 0.85, pb: 1, lineHeight: 1.3 }}>
+    <Typography
+      variant="caption"
+      sx={{ display: "block", opacity: 0.85, pb: 1, lineHeight: 1.3, fontSize: "1.5em" }}
+    >
       “{q.quote}” — {q.author}
     </Typography>
   );
