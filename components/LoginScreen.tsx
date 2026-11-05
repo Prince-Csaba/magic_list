@@ -4,7 +4,13 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import GoogleIcon from "@mui/icons-material/Google";
 
-export default function LoginScreen({ onSignIn }: { onSignIn: () => void }) {
+export default function LoginScreen({
+  onSignIn,
+  error,
+}: {
+  onSignIn: () => void;
+  error?: string | null;
+}) {
   return (
     <Stack
       spacing={3}
@@ -16,6 +22,7 @@ export default function LoginScreen({ onSignIn }: { onSignIn: () => void }) {
       <Button variant="contained" size="large" startIcon={<GoogleIcon />} onClick={onSignIn}>
         Sign in with Google
       </Button>
+      {error && <Typography sx={{ color: "error.main" }}>Sign-in failed: {error}</Typography>}
     </Stack>
   );
 }

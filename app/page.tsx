@@ -6,7 +6,7 @@ import LoginScreen from "@/components/LoginScreen";
 import TabsShell from "@/components/TabsShell";
 
 export default function Home() {
-  const { user, loading, signIn, signOut } = useAuth();
+  const { user, loading, signIn, signOut, error } = useAuth();
 
   if (loading)
     return (
@@ -14,6 +14,6 @@ export default function Home() {
         <CircularProgress />
       </Box>
     );
-  if (!user) return <LoginScreen onSignIn={signIn} />;
+  if (!user) return <LoginScreen onSignIn={signIn} error={error} />;
   return <TabsShell uid={user.uid} onSignOut={signOut} />;
 }
