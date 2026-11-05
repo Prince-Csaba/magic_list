@@ -17,6 +17,7 @@ import TallyTab from "./TallyTab";
 import CounterTab from "./CounterTab";
 import ChecklistTab from "./ChecklistTab";
 import SeedButton from "./SeedButton";
+import DailyQuote from "./DailyQuote";
 
 function TabContent({ uid, tab }: { uid: string; tab: TabDoc }) {
   switch (tab.type) {
@@ -36,17 +37,30 @@ export default function TabsShell({ uid, onSignOut }: { uid: string; onSignOut: 
 
   return (
     <Box sx={{ minHeight: "100dvh" }}>
-      <AppBar position="sticky" color="default" elevation={1}>
-        <Toolbar variant="dense" sx={{ gap: 1 }}>
-          <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 700 }}>
-            Magic List
-          </Typography>
-          <IconButton aria-label="sign out" onClick={onSignOut}>
+      <AppBar
+        position="sticky"
+        elevation={2}
+        sx={{ background: "linear-gradient(135deg, #6750a4 0%, #d0479b 100%)", color: "#fff" }}
+      >
+        <Toolbar sx={{ alignItems: "flex-start", pt: 1.5, pb: 0.5 }}>
+          <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+            <Typography variant="h5" sx={{ fontWeight: 800 }}>
+              Magic List
+            </Typography>
+            <DailyQuote />
+          </Box>
+          <IconButton aria-label="sign out" color="inherit" onClick={onSignOut}>
             <LogoutIcon />
           </IconButton>
         </Toolbar>
         {tabs && tabs.length > 0 && (
-          <Tabs value={Math.min(index, tabs.length - 1)} onChange={(_, v) => setIndex(v)} variant="fullWidth">
+          <Tabs
+            value={Math.min(index, tabs.length - 1)}
+            onChange={(_, v) => setIndex(v)}
+            variant="fullWidth"
+            textColor="inherit"
+            slotProps={{ indicator: { sx: { bgcolor: "#fff", height: 3 } } }}
+          >
             {tabs.map((t) => (
               <Tab key={t.id} label={t.name} />
             ))}

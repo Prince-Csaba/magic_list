@@ -13,14 +13,18 @@ import {
   where,
 } from "firebase/firestore";
 import Box from "@mui/material/Box";
-import Card from "@mui/material/Card";
-import CardActionArea from "@mui/material/CardActionArea";
-import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
-import IconButton from "@mui/material/IconButton";
-import UndoIcon from "@mui/icons-material/Undo";
 import { db } from "@/lib/firebase";
 import type { TabDoc } from "@/lib/types";
+import TallyTile from "./TallyTile";
+
+const GRADIENTS = [
+  "linear-gradient(135deg, #ff6b6b, #ee5a9b)",
+  "linear-gradient(135deg, #4facfe, #6a5af9)",
+  "linear-gradient(135deg, #11c9a0, #38a3f1)",
+  "linear-gradient(135deg, #ffb347, #ff6f61)",
+  "linear-gradient(135deg, #a18cd1, #fbc2eb)",
+  "linear-gradient(135deg, #43cea2, #185a9d)",
+];
 
 interface Ev {
   id: string;
@@ -39,9 +43,25 @@ const startOfWeek = () => {
   return d;
 };
 
+const datingMetrics = [
+  { id: "closes", label: "Closes" },
+  { id: "mismatch", label: "Mismatch" },
+  { id: "old-contact", label: "Old contact" },
+];
+
 export default function TallyTab({ uid, tab }: { uid: string; tab: TabDoc }) {
   const [events, setEvents] = useState<Ev[]>([]);
   const col = collection(db, "users", uid, "tabs", tab.id, "events");
+  const savedMetrics = tab.metrics ?? [];
+  const metrics =
+    tab.id === "dating"
+      ? [
+          ...savedMetrics,
+          ...datingMetrics.filter(
+            (metric) => !savedMetrics.some((saved) => saved.id === metric.id)
+          ),
+        ]
+      : savedMetrics;
 
   useEffect(() => {
     const q = query(
@@ -60,39 +80,31 @@ export default function TallyTab({ uid, tab }: { uid: string; tab: TabDoc }) {
   }, [uid, tab.id]);
 
   const add = (metricId: string) => addDoc(col, { metricId, ts: serverTimestamp() });
-  const undo = (metricId: string) => {
-    const last = events.find((e) => e.metricId === metricId);
+  const dayStart = startOfDay();
+
+  // Events are sorted newest first, so the first match is today's latest entry.
+  const remove = (metricId: string) => {
+    const last = events.find((e) => e.metricId === metricId && e.ts >= dayStart);
     if (last) deleteDoc(doc(col, last.id));
   };
 
-  const dayStart = startOfDay();
-
   return (
-    <Stack spacing={2}>
-      {(tab.metrics ?? []).map((m) => {
+    <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
+      {metrics.map((m, i) => {
         const mine = events.filter((e) => e.metricId === m.id);
         const today = mine.filter((e) => e.ts >= dayStart).length;
         return (
-          <Card key={m.id} variant="outlined">
-            <Stack direction="row" sx={{ alignItems: "center" }}>
-              <CardActionArea onClick={() => add(m.id)} sx={{ p: 2, flex: 1 }}>
-                <Typography variant="subtitle1">{m.label}</Typography>
-                <Box sx={{ display: "flex", alignItems: "baseline", gap: 2 }}>
-                  <Typography variant="h3" sx={{ fontWeight: 700 }}>
-                    {today}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                    today · {mine.length} this week
-                  </Typography>
-                </Box>
-              </CardActionArea>
-              <IconButton aria-label="undo" onClick={() => undo(m.id)} sx={{ mr: 1 }}>
-                <UndoIcon />
-              </IconButton>
-            </Stack>
-          </Card>
+          <TallyTile
+            key={m.id}
+            label={m.label}
+            today={today}
+            week={mine.length}
+            gradient={GRADIENTS[i % GRADIENTS.length]}
+            onAdd={() => add(m.id)}
+            onRemove={() => remove(m.id)}
+          />
         );
       })}
-    </Stack>
+    </Box>
   );
 }
