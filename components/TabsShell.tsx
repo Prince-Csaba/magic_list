@@ -15,6 +15,7 @@ import { useTabs } from "@/lib/useTabs";
 import type { TabDoc } from "@/lib/types";
 import TallyTab from "./TallyTab";
 import CounterTab from "./CounterTab";
+import WorkTicketsTab from "./WorkTicketsTab";
 import ChecklistTab from "./ChecklistTab";
 import SeedButton from "./SeedButton";
 import DailyQuote from "./DailyQuote";
@@ -24,6 +25,7 @@ function TabContent({ uid, tab }: { uid: string; tab: TabDoc }) {
     case "tally":
       return <TallyTab uid={uid} tab={tab} />;
     case "counter":
+      if (tab.id === "work") return <WorkTicketsTab uid={uid} tab={tab} />;
       return <CounterTab uid={uid} tab={tab} />;
     case "checklist":
       return <ChecklistTab uid={uid} tab={tab} />;

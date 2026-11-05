@@ -26,7 +26,7 @@ export default function SeedButton({ uid }: { uid: string }) {
       name: "Work",
       type: "counter",
       order: 1,
-      label: "Open tickets",
+      label: "Open tickets morning",
       value: 0,
     });
     tab("morning", {
