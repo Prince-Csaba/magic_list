@@ -9,6 +9,7 @@ interface Props {
   label: string;
   today: number;
   week: number;
+  allTime?: number;
   gradient: string;
   onAdd: () => void;
   onRemove: () => void;
@@ -23,7 +24,8 @@ const btn = {
   "&.Mui-disabled": { color: "rgba(255,255,255,0.4)" },
 };
 
-export default function TallyTile({ label, today, week, gradient, onAdd, onRemove }: Props) {
+export default function TallyTile({ label, today, week, allTime, gradient, onAdd, onRemove }: Props) {
+  const count = allTime ?? today;
   return (
     <Box
       sx={{
@@ -42,13 +44,13 @@ export default function TallyTile({ label, today, week, gradient, onAdd, onRemov
         {label}
       </Typography>
       <Typography variant="h2" sx={{ fontWeight: 800, lineHeight: 1.1 }}>
-        {today}
+        {count}
       </Typography>
       <Typography variant="caption" sx={{ opacity: 0.9, mb: 1 }}>
-        {week} this week
+        {allTime === undefined ? `${week} this week` : "all time"}
       </Typography>
       <Box sx={{ display: "flex", gap: 2 }}>
-        <IconButton aria-label={`remove ${label}`} disabled={today <= 0} onClick={onRemove} sx={btn}>
+        <IconButton aria-label={`remove ${label}`} disabled={count <= 0} onClick={onRemove} sx={btn}>
           <RemoveIcon />
         </IconButton>
         <IconButton aria-label={`add ${label}`} onClick={onAdd} sx={btn}>

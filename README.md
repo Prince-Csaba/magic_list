@@ -21,6 +21,11 @@ color-coded priority (high, medium, or low), use the up and down buttons to
 reorder projects independently, or delete a project when it is no longer needed.
 Projects, priorities, and their order are saved to your account.
 
+Dating counters show all-time totals; the minus button removes the most recent
+event for that metric. Use the chart icon to see all-time counts and percentages
+relative to the preceding metric. A percentage is unavailable when the preceding
+count is zero.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
