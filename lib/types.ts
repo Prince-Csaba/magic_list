@@ -5,6 +5,12 @@ export interface Metric {
   label: string;
 }
 
+export type ProjectPriority = "none" | "high" | "medium" | "low";
+
+export interface ProjectItem extends Metric {
+  priority?: ProjectPriority;
+}
+
 export interface TabDoc {
   id: string;
   name: string;
@@ -15,8 +21,8 @@ export interface TabDoc {
   // counter: a single number
   label?: string;
   value?: number;
-  // checklist: items + which ones are done on `doneDate`
-  items?: Metric[];
+  // checklist or projects: items; checklist tracks which are done on `doneDate`
+  items?: ProjectItem[];
   doneDate?: string;
   doneIds?: string[];
 }

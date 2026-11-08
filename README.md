@@ -16,9 +16,10 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-The Projects tab holds long-term focuses and priorities. Add a project, use the
-up and down buttons to change its priority, or delete it when it is no longer
-needed. Projects and their order are saved to your account.
+The Projects tab holds long-term focuses and priorities. Set an optional
+color-coded priority (high, medium, or low), use the up and down buttons to
+reorder projects independently, or delete a project when it is no longer needed.
+Projects, priorities, and their order are saved to your account.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 

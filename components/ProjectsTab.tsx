@@ -12,11 +12,20 @@ import IconButton from "@mui/material/IconButton";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
+import MenuItem from "@mui/material/MenuItem";
+import Select from "@mui/material/Select";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { db } from "@/lib/firebase";
-import type { Metric, TabDoc } from "@/lib/types";
+import type { ProjectItem, ProjectPriority, TabDoc } from "@/lib/types";
+
+const priorityColors: Record<ProjectPriority, string> = {
+  none: "text.secondary",
+  high: "error.main",
+  medium: "warning.main",
+  low: "success.main",
+};
 
 export default function ProjectsTab({ uid, tab }: { uid: string; tab: TabDoc }) {
   const [label, setLabel] = useState("");
@@ -24,14 +33,14 @@ export default function ProjectsTab({ uid, tab }: { uid: string; tab: TabDoc }) 
   const [error, setError] = useState<string | null>(null);
   const items = tab.items ?? [];
 
-  const changeItems = async (change: (current: Metric[]) => Metric[]) => {
+  const changeItems = async (change: (current: ProjectItem[]) => ProjectItem[]) => {
     setBusy(true);
     setError(null);
     try {
       const ref = doc(db, "users", uid, "tabs", tab.id);
       await runTransaction(db, async (transaction) => {
         const snapshot = await transaction.get(ref);
-        const current = snapshot.exists() ? (snapshot.data().items ?? []) as Metric[] : [];
+        const current = snapshot.exists() ? (snapshot.data().items ?? []) as ProjectItem[] : [];
         const next = change(current);
         if (snapshot.exists()) {
           transaction.update(ref, { items: next });
@@ -96,8 +105,33 @@ export default function ProjectsTab({ uid, tab }: { uid: string; tab: TabDoc }) 
         ) : (
           <List disablePadding>
             {items.map((item, index) => (
-              <ListItem key={item.id} divider={index < items.length - 1}>
-                <ListItemText primary={item.label} sx={{ overflowWrap: "anywhere" }} />
+              <ListItem
+                key={item.id}
+                divider={index < items.length - 1}
+                sx={{ flexWrap: "wrap" }}
+              >
+                <ListItemText
+                  primary={item.label}
+                  sx={{ overflowWrap: "anywhere", minWidth: { xs: "100%", sm: 0 } }}
+                />
+                <Select<ProjectPriority>
+                  value={item.priority ?? "none"}
+                  onChange={(event) => {
+                    const priority = event.target.value;
+                    void changeItems((current) =>
+                      current.map((entry) => entry.id === item.id ? { ...entry, priority } : entry)
+                    );
+                  }}
+                  inputProps={{ "aria-label": `Priority for ${item.label}` }}
+                  disabled={busy}
+                  size="small"
+                  sx={{ minWidth: 140, color: priorityColors[item.priority ?? "none"], mr: "auto" }}
+                >
+                  <MenuItem value="none">No priority</MenuItem>
+                  <MenuItem value="high" sx={{ color: "error.main" }}>High</MenuItem>
+                  <MenuItem value="medium" sx={{ color: "warning.main" }}>Medium</MenuItem>
+                  <MenuItem value="low" sx={{ color: "success.main" }}>Low</MenuItem>
+                </Select>
                 <IconButton
                   aria-label={`Move ${item.label} up`}
                   disabled={busy || index === 0}
