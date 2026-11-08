@@ -1,4 +1,4 @@
-export type TabType = "tally" | "counter" | "checklist";
+export type TabType = "tally" | "counter" | "checklist" | "projects";
 
 export interface Metric {
   id: string;

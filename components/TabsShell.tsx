@@ -17,6 +17,7 @@ import TallyTab from "./TallyTab";
 import CounterTab from "./CounterTab";
 import WorkTicketsTab from "./WorkTicketsTab";
 import ChecklistTab from "./ChecklistTab";
+import ProjectsTab from "./ProjectsTab";
 import SeedButton from "./SeedButton";
 import DailyQuote from "./DailyQuote";
 
@@ -29,11 +30,27 @@ function TabContent({ uid, tab }: { uid: string; tab: TabDoc }) {
       return <CounterTab uid={uid} tab={tab} />;
     case "checklist":
       return <ChecklistTab uid={uid} tab={tab} />;
+    case "projects":
+      return <ProjectsTab uid={uid} tab={tab} />;
   }
 }
 
 export default function TabsShell({ uid, onSignOut }: { uid: string; onSignOut: () => void }) {
-  const tabs = useTabs(uid);
+  const savedTabs = useTabs(uid);
+  const tabs = savedTabs && (
+    savedTabs.some((tab) => tab.id === "projects")
+      ? savedTabs
+      : [
+          ...savedTabs,
+          {
+            id: "projects",
+            name: "Projects",
+            type: "projects" as const,
+            order: Math.max(-1, ...savedTabs.map((tab) => tab.order)) + 1,
+            items: [],
+          },
+        ]
+  );
   const [index, setIndex] = useState(0);
   const current = tabs?.[Math.min(index, (tabs?.length ?? 1) - 1)];
 
@@ -59,7 +76,8 @@ export default function TabsShell({ uid, onSignOut }: { uid: string; onSignOut: 
           <Tabs
             value={Math.min(index, tabs.length - 1)}
             onChange={(_, v) => setIndex(v)}
-            variant="fullWidth"
+            variant="scrollable"
+            scrollButtons="auto"
             textColor="inherit"
             slotProps={{ indicator: { sx: { bgcolor: "#fff", height: 3 } } }}
           >
@@ -75,9 +93,9 @@ export default function TabsShell({ uid, onSignOut }: { uid: string; onSignOut: 
             <CircularProgress />
           </Box>
         )}
-        {tabs?.length === 0 && (
+        {savedTabs?.length === 0 && (
           <Stack spacing={2} sx={{ alignItems: "center", pt: 6 }}>
-            <Typography sx={{ color: "text.secondary" }}>No tabs yet.</Typography>
+            <Typography sx={{ color: "text.secondary" }}>Want to add the starter tabs?</Typography>
             <SeedButton uid={uid} />
           </Stack>
         )}
