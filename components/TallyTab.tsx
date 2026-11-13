@@ -108,9 +108,10 @@ export default function TallyTab({ uid, tab }: { uid: string; tab: TabDoc }) {
     }
   };
   const dayStart = startOfDay();
+  const weekStart = startOfWeek();
 
   const remove = async (metricId: string) => {
-    const last = events.find((e) => e.metricId === metricId && (isDating || e.ts >= dayStart));
+    const last = events.find((e) => e.metricId === metricId && e.ts >= (isDating ? weekStart : dayStart));
     if (!last) return;
     try {
       await deleteDoc(doc(col, last.id));
@@ -171,13 +172,14 @@ export default function TallyTab({ uid, tab }: { uid: string; tab: TabDoc }) {
           {metrics.map((m, i) => {
             const mine = events.filter((e) => e.metricId === m.id);
             const today = mine.filter((e) => e.ts >= dayStart).length;
+            const week = mine.filter((e) => e.ts >= weekStart).length;
             return (
               <TallyTile
                 key={m.id}
                 label={m.label}
                 today={today}
-                week={mine.length}
-                allTime={isDating ? mine.length : undefined}
+                week={week}
+                showWeekAsPrimary={isDating}
                 gradient={GRADIENTS[i % GRADIENTS.length]}
                 onAdd={() => add(m.id)}
                 onRemove={() => remove(m.id)}

@@ -5,13 +5,19 @@ import AddIcon from "@mui/icons-material/Add";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
+import EditIcon from "@mui/icons-material/Edit";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import SettingsIcon from "@mui/icons-material/Settings";
 import Alert from "@mui/material/Alert";
+import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
+import Collapse from "@mui/material/Collapse";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
 import IconButton from "@mui/material/IconButton";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemText from "@mui/material/ListItemText";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import Stack from "@mui/material/Stack";
@@ -27,10 +33,19 @@ const priorityColors: Record<ProjectPriority, string> = {
   low: "success.main",
 };
 
+const projectGradients = [
+  "linear-gradient(135deg, #6750a4, #d0479b)",
+  "linear-gradient(135deg, #397bd1, #7255bd)",
+  "linear-gradient(135deg, #008f83, #348bc6)",
+  "linear-gradient(135deg, #cb5b48, #d3852b)",
+];
+
 export default function ProjectsTab({ uid, tab }: { uid: string; tab: TabDoc }) {
   const [label, setLabel] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [renaming, setRenaming] = useState<{ id: string; label: string } | null>(null);
   const items = tab.items ?? [];
 
   const changeItems = async (change: (current: ProjectItem[]) => ProjectItem[]) => {
@@ -77,6 +92,18 @@ export default function ProjectsTab({ uid, tab }: { uid: string; tab: TabDoc }) 
       return next;
     });
 
+  const rename = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!renaming || !renaming.label.trim()) return;
+    const { id } = renaming;
+    const nextLabel = renaming.label.trim();
+    if (await changeItems((current) =>
+      current.map((item) => item.id === id ? { ...item, label: nextLabel } : item)
+    )) {
+      setRenaming(null);
+    }
+  };
+
   return (
     <Stack spacing={2}>
       <Typography color="text.secondary">
@@ -97,23 +124,44 @@ export default function ProjectsTab({ uid, tab }: { uid: string; tab: TabDoc }) 
           Add
         </Button>
       </Stack>
-      <Card variant="outlined">
-        {items.length === 0 ? (
+      {items.length === 0 ? (
+        <Card variant="outlined">
           <Typography color="text.secondary" sx={{ p: 2 }}>
             No projects yet. Add a focus to get started.
           </Typography>
-        ) : (
-          <List disablePadding>
-            {items.map((item, index) => (
-              <ListItem
-                key={item.id}
-                divider={index < items.length - 1}
-                sx={{ flexWrap: "wrap" }}
-              >
-                <ListItemText
-                  primary={item.label}
-                  sx={{ overflowWrap: "anywhere", minWidth: { xs: "100%", sm: 0 } }}
-                />
+        </Card>
+      ) : (
+        <Stack spacing={1.5}>
+          {items.map((item, index) => (
+            <Card key={item.id} variant="outlined" sx={{ overflow: "hidden", boxShadow: 1 }}>
+              <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", p: 1.5 }}>
+                <Box sx={{
+                  background: projectGradients[index % projectGradients.length],
+                  color: "#fff",
+                  borderRadius: 2,
+                  width: 44,
+                  height: 44,
+                  flexShrink: 0,
+                  display: "grid",
+                  placeItems: "center",
+                }}>
+                  <AutoAwesomeIcon />
+                </Box>
+                <Typography sx={{ fontWeight: 700, flex: 1, minWidth: 0, overflowWrap: "anywhere" }}>
+                  {item.label}
+                </Typography>
+                <IconButton
+                  aria-label={`Settings for ${item.label}`}
+                  aria-expanded={expandedId === item.id}
+                  aria-controls={`project-actions-${item.id}`}
+                  disabled={busy}
+                  onClick={() => setExpandedId((current) => current === item.id ? null : item.id)}
+                  sx={{ color: "primary.main" }}
+                >
+                  <SettingsIcon />
+                </IconButton>
+              </Stack>
+              <Stack direction="row" sx={{ px: 1.5, pb: 1.5 }}>
                 <Select<ProjectPriority>
                   value={item.priority ?? "none"}
                   onChange={(event) => {
@@ -125,39 +173,84 @@ export default function ProjectsTab({ uid, tab }: { uid: string; tab: TabDoc }) 
                   inputProps={{ "aria-label": `Priority for ${item.label}` }}
                   disabled={busy}
                   size="small"
-                  sx={{ minWidth: 140, color: priorityColors[item.priority ?? "none"], mr: "auto" }}
+                  sx={{ minWidth: 140, color: priorityColors[item.priority ?? "none"] }}
                 >
                   <MenuItem value="none">No priority</MenuItem>
                   <MenuItem value="high" sx={{ color: "error.main" }}>High</MenuItem>
                   <MenuItem value="medium" sx={{ color: "warning.main" }}>Medium</MenuItem>
                   <MenuItem value="low" sx={{ color: "success.main" }}>Low</MenuItem>
                 </Select>
-                <IconButton
-                  aria-label={`Move ${item.label} up`}
-                  disabled={busy || index === 0}
-                  onClick={() => move(item.id, -1)}
+              </Stack>
+              <Collapse in={expandedId === item.id}>
+                <Stack
+                  id={`project-actions-${item.id}`}
+                  direction="row"
+                  spacing={1}
+                  sx={{ px: 1.5, py: 1, bgcolor: "action.hover", justifyContent: "flex-end" }}
                 >
-                  <ArrowUpwardIcon />
-                </IconButton>
-                <IconButton
-                  aria-label={`Move ${item.label} down`}
-                  disabled={busy || index === items.length - 1}
-                  onClick={() => move(item.id, 1)}
-                >
-                  <ArrowDownwardIcon />
-                </IconButton>
-                <IconButton
-                  aria-label={`Delete ${item.label}`}
-                  disabled={busy}
-                  onClick={() => changeItems((current) => current.filter((entry) => entry.id !== item.id))}
-                >
-                  <DeleteOutlineIcon />
-                </IconButton>
-              </ListItem>
-            ))}
-          </List>
-        )}
-      </Card>
+                  <IconButton
+                    aria-label={`Move ${item.label} up`}
+                    disabled={busy || index === 0}
+                    onClick={() => void move(item.id, -1)}
+                  >
+                    <ArrowUpwardIcon />
+                  </IconButton>
+                  <IconButton
+                    aria-label={`Move ${item.label} down`}
+                    disabled={busy || index === items.length - 1}
+                    onClick={() => void move(item.id, 1)}
+                  >
+                    <ArrowDownwardIcon />
+                  </IconButton>
+                  <IconButton
+                    aria-label={`Rename ${item.label}`}
+                    disabled={busy}
+                    onClick={() => {
+                      setError(null);
+                      setRenaming({ id: item.id, label: item.label });
+                    }}
+                  >
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton
+                    aria-label={`Delete ${item.label}`}
+                    color="error"
+                    disabled={busy}
+                    onClick={() => void changeItems((current) =>
+                      current.filter((entry) => entry.id !== item.id)
+                    )}
+                  >
+                    <DeleteOutlineIcon />
+                  </IconButton>
+                </Stack>
+              </Collapse>
+            </Card>
+          ))}
+        </Stack>
+      )}
+      <Dialog open={Boolean(renaming)} onClose={() => { if (!busy) setRenaming(null); }} fullWidth maxWidth="xs">
+        <form onSubmit={rename}>
+          <DialogTitle>Rename project</DialogTitle>
+          <DialogContent>
+            {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+            <TextField
+              autoFocus
+              fullWidth
+              label="Project name"
+              value={renaming?.label ?? ""}
+              onChange={(event) => setRenaming((current) =>
+                current ? { ...current, label: event.target.value } : current
+              )}
+              disabled={busy}
+              sx={{ mt: 1 }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button disabled={busy} onClick={() => setRenaming(null)}>Cancel</Button>
+            <Button type="submit" disabled={busy || !renaming?.label.trim()}>Save</Button>
+          </DialogActions>
+        </form>
+      </Dialog>
     </Stack>
   );
 }

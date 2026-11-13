@@ -26,6 +26,7 @@ interface DailyTickets {
   date: string;
   morning: number;
   evening: number;
+  total?: number;
 }
 
 function formatDate(date: string) {
@@ -57,6 +58,7 @@ export default function WorkTicketsTab({ uid, tab }: { uid: string; tab: TabDoc 
             date: data.date as string,
             morning: data.morning as number,
             evening: data.evening as number,
+            total: data.total as number | undefined,
           };
         });
         if (active) setRecords(dailyRecords);
@@ -71,6 +73,7 @@ export default function WorkTicketsTab({ uid, tab }: { uid: string; tab: TabDoc 
                   date: today,
                   morning: dailyRecords.length === 0 ? (tab.value ?? 0) : 0,
                   evening: 0,
+                  total: 0,
                   savedAt: serverTimestamp(),
                 });
               }
@@ -103,7 +106,7 @@ export default function WorkTicketsTab({ uid, tab }: { uid: string; tab: TabDoc 
     };
   }, [history, tab.value, today, todayRef]);
 
-  const change = async (field: "morning" | "evening", amount: number) => {
+  const change = async (field: "morning" | "evening" | "total", amount: number) => {
     setError(null);
     try {
       await runTransaction(db, async (transaction) => {
@@ -135,8 +138,17 @@ export default function WorkTicketsTab({ uid, tab }: { uid: string; tab: TabDoc 
         disabled={!ready}
         onChange={(amount) => change("evening", amount)}
       />
+      <TicketCounter
+        label="Total tickets"
+        value={todayRecord?.total ?? 0}
+        disabled={!ready}
+        onChange={(amount) => change("total", amount)}
+      />
       <Stack spacing={0.5}>
         <Typography variant="h6">Previous days</Typography>
+        <Typography variant="body2" color="text.secondary">
+          Morning open / Evening open / Total
+        </Typography>
         {!ready ? (
           <Typography color="text.secondary">Loading ticket history…</Typography>
         ) : records.filter((record) => record.date < today).length === 0 ? (
@@ -154,7 +166,7 @@ export default function WorkTicketsTab({ uid, tab }: { uid: string; tab: TabDoc 
                   >
                     <Typography sx={{ fontWeight: 700 }}>{formatDate(record.date)}</Typography>
                     <Typography variant="body2">
-                      Morning {record.morning} · Evening {record.evening}
+                      {record.morning} / {record.evening} / {record.total ?? "—"}
                     </Typography>
                   </Stack>
                 </ListItem>
@@ -178,32 +190,30 @@ function TicketCounter({
   onChange: (amount: number) => void;
 }) {
   return (
-    <Card variant="outlined" sx={{ p: 3 }}>
-      <Stack spacing={2} sx={{ alignItems: "center" }}>
-        <Typography variant="subtitle1">{label}</Typography>
-        <Typography variant="h1" sx={{ fontWeight: 700 }}>
-          {value}
-        </Typography>
-        <Stack direction="row" spacing={4}>
+    <Card variant="outlined" sx={{ px: 2, py: 1 }}>
+      <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+        <Typography variant="subtitle1" sx={{ flex: 1, minWidth: 0 }}>{label}</Typography>
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
           <IconButton
             color="primary"
-            size="large"
             disabled={disabled || value <= 0}
             onClick={() => onChange(-1)}
-            sx={{ border: 1, width: 72, height: 72 }}
+            sx={{ border: 1 }}
             aria-label={`decrease ${label}`}
           >
-            <RemoveIcon fontSize="large" />
+            <RemoveIcon />
           </IconButton>
+          <Typography variant="h6" sx={{ fontWeight: 700, minWidth: 32, textAlign: "center" }}>
+            {value}
+          </Typography>
           <IconButton
             color="primary"
-            size="large"
             disabled={disabled}
             onClick={() => onChange(1)}
-            sx={{ border: 1, width: 72, height: 72 }}
+            sx={{ border: 1 }}
             aria-label={`increase ${label}`}
           >
-            <AddIcon fontSize="large" />
+            <AddIcon />
           </IconButton>
         </Stack>
       </Stack>

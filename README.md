@@ -17,12 +17,17 @@ bun dev
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 The Projects tab holds long-term focuses and priorities. Set an optional
-color-coded priority (high, medium, or low), use the up and down buttons to
-reorder projects independently, or delete a project when it is no longer needed.
+color-coded priority (high, medium, or low), and use a project's gear button to
+reorder, rename, or delete it.
 Projects, priorities, and their order are saved to your account.
 
-Dating counters show all-time totals; the minus button removes the most recent
-event for that metric. Use the chart icon to see all-time counts and percentages
+The Work tab saves separate daily morning open, evening open, and total ticket
+counts. Previous days are shown in that order; a dash means a total was not
+recorded for an older day.
+
+Dating counters show counts for the current week, starting Monday; the minus
+button removes the most recent event for that metric in the current week. Use
+the chart icon to see all-time counts and percentages
 relative to the preceding metric. A percentage is unavailable when the preceding
 count is zero.
 
