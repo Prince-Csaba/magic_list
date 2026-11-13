@@ -21,6 +21,12 @@ color-coded priority (high, medium, or low), and use a project's gear button to
 reorder, rename, or delete it.
 Projects, priorities, and their order are saved to your account.
 
+The Morning routine can be edited with the add field and each activity's gear
+button. Checks reset each day. Daily history records completed activities and
+their names, even if the routine is later edited. The last previously saved
+checklist day is imported when available; older days cannot be recovered.
+Days without a saved checklist are shown as "No activity recorded".
+
 The Work tab saves separate daily morning open, evening open, and total ticket
 counts. Previous days are shown in that order; a dash means a total was not
 recorded for an older day.
